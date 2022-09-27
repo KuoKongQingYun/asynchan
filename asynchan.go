@@ -5,13 +5,13 @@ import (
 	"errors"
 )
 
-type AsyncResponse struct {
+type Asynchan struct {
 	ChanResult chan interface{}
 	ChanError  chan error
 	Ctx        context.Context
 }
 
-func (p *AsyncResponse) AwaitOne() (interface{}, error) {
+func (p *Asynchan) AwaitOne() (interface{}, error) {
 	select {
 	case result, ok := <-p.ChanResult:
 		if ok {
@@ -25,7 +25,7 @@ func (p *AsyncResponse) AwaitOne() (interface{}, error) {
 		return nil, errors.New("cancelled")
 	}
 }
-func (p *AsyncResponse) AwaitAll() ([]interface{}, error) {
+func (p *Asynchan) AwaitAll() ([]interface{}, error) {
 	results := make([]interface{}, 0)
 	for {
 		select {
@@ -43,8 +43,8 @@ func (p *AsyncResponse) AwaitAll() ([]interface{}, error) {
 	}
 }
 
-func NewAsyncResponse(ctx context.Context) *AsyncResponse {
-	p := &AsyncResponse{
+func New(ctx context.Context) *Asynchan {
+	p := &Asynchan{
 		ChanResult: make(chan interface{}),
 		ChanError:  make(chan error),
 		Ctx:        ctx,
