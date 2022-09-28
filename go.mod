@@ -1,3 +1,3 @@
-module github.com/KuoKongQingYun/asynchan
+module github.com/kkqy/asynchan
 
 go 1.20
