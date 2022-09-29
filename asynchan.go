@@ -58,7 +58,7 @@ func (p *Asynchan) SetError(err error) error {
 		return errors.New("cancelled")
 	}
 }
-func (p *Asynchan) Close(err error) {
+func (p *Asynchan) Close() {
 	close(p.chanResult)
 	close(p.chanError)
 }
