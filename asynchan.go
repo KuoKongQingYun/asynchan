@@ -5,28 +5,29 @@ import (
 	"errors"
 )
 
-type Asynchan struct {
+type Asynchan[T any] struct {
 	ctx        context.Context
-	chanResult chan interface{}
+	chanResult chan T
 	chanError  chan error
 }
 
-func (p *Asynchan) AwaitOne() (interface{}, error) {
+func (p *Asynchan[T]) AwaitOne() (T, error) {
+	var result T
 	select {
 	case result, ok := <-p.chanResult:
 		if ok {
 			return result, nil
 		} else {
-			return nil, errors.New("no result")
+			return result, errors.New("no result")
 		}
 	case err := <-p.chanError:
-		return nil, err
+		return result, err
 	case <-p.ctx.Done():
-		return nil, errors.New("cancelled")
+		return result, errors.New("cancelled")
 	}
 }
-func (p *Asynchan) AwaitAll() ([]interface{}, error) {
-	results := make([]interface{}, 0)
+func (p *Asynchan[T]) AwaitAll() ([]T, error) {
+	results := make([]T, 0)
 	for {
 		select {
 		case result, ok := <-p.chanResult:
@@ -42,7 +43,7 @@ func (p *Asynchan) AwaitAll() ([]interface{}, error) {
 		}
 	}
 }
-func (p *Asynchan) SetResult(result interface{}) error {
+func (p *Asynchan[T]) SetResult(result T) error {
 	select {
 	case p.chanResult <- result:
 		return nil
@@ -50,7 +51,7 @@ func (p *Asynchan) SetResult(result interface{}) error {
 		return errors.New("cancelled")
 	}
 }
-func (p *Asynchan) SetError(err error) error {
+func (p *Asynchan[T]) SetError(err error) error {
 	select {
 	case p.chanError <- err:
 		return nil
@@ -58,13 +59,13 @@ func (p *Asynchan) SetError(err error) error {
 		return errors.New("cancelled")
 	}
 }
-func (p *Asynchan) Close() {
+func (p *Asynchan[T]) Close() {
 	close(p.chanResult)
 	close(p.chanError)
 }
-func New(ctx context.Context) *Asynchan {
-	p := &Asynchan{
-		chanResult: make(chan interface{}),
+func New[T any](ctx context.Context) *Asynchan[T] {
+	p := &Asynchan[T]{
+		chanResult: make(chan T),
 		chanError:  make(chan error),
 		ctx:        ctx,
 	}
